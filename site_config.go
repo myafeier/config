@@ -81,6 +81,13 @@ var (
 	ThriftSslClientCrt string
 )
 
+// RPC
+var (
+	RPCProtocol   string
+	RPCListenHost string
+	RPCListenPort string
+)
+
 var Upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -166,6 +173,20 @@ func LoadConfig(appPath, configDirectory, configName string) {
 			SmsToken = SmsTokenKey.String()
 			SmsUrl = SmsUrlKey.String()
 			SmsAppid = SmsAppIdKey.String()
+		}
+	}
+
+	//RPC配置
+
+	rpcKey, err := cfg.GetSection("rpc")
+	if err == nil {
+		RPCListenHostKey, err := rpcKey.GetKey("listen_host")
+		RPCListenPortKey, err := rpcKey.GetKey("listen_port")
+		RPCProtocolKey, err := rpcKey.GetKey("protocol")
+		if err == nil {
+			RPCListenHost = RPCListenHostKey.String()
+			RPCListenPort = RPCListenPortKey.String()
+			RPCProtocol = RPCProtocolKey.String()
 		}
 	}
 
