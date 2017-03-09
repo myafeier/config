@@ -15,6 +15,7 @@ var (
 	DbName string
 	DbUser string
 	DbPass string
+	DbType string
 )
 
 var (
@@ -106,12 +107,14 @@ func LoadConfig(appPath, configDirectory, configName string) {
 		dbNameKey, err := key.GetKey("db_name")
 		dbUserKey, err := key.GetKey("db_user")
 		dbPassKey, err := key.GetKey("db_pass")
+		dbTypeKey, err := key.GetKey("db_type")
 		if err == nil {
 			DbHost = dbHostKey.String()
 			DbPort = dbPortKey.String()
 			DbName = dbNameKey.String()
 			DbUser = dbUserKey.String()
 			DbPass = dbPassKey.String()
+			DbType = dbTypeKey.String()
 		}
 
 	}
