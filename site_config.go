@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/go-ini/ini"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -8,6 +9,9 @@ import (
 )
 
 var ConfigPath string
+
+//原始文件，如果有个性配置，在此读取
+var OriginFile *ini.File
 
 var (
 	DbHost string
@@ -99,7 +103,8 @@ var Upgrader = websocket.Upgrader{
 func LoadConfig(appPath, configDirectory, configName string) {
 
 	ConfigPath = appPath + "/" + configDirectory + "/"
-	cfg, err := ini.Load(ConfigPath + configName)
+	var err error
+	OriginFile, err = ini.Load(ConfigPath + configName)
 	if err != nil {
 		panic("Load config error:" + err.Error())
 	}
@@ -107,7 +112,7 @@ func LoadConfig(appPath, configDirectory, configName string) {
 	SiteRootPath = appPath
 
 	//数据库配置
-	key, err := cfg.GetSection("database")
+	key, err := OriginFile.GetSection("database")
 	if err == nil {
 		dbHostKey, err := key.GetKey("db_host")
 		dbPortKey, err := key.GetKey("db_port")
@@ -126,7 +131,7 @@ func LoadConfig(appPath, configDirectory, configName string) {
 
 	}
 
-	siteKey, err := cfg.GetSection("site")
+	siteKey, err := OriginFile.GetSection("site")
 	if err == nil {
 		UrlKey, err := siteKey.GetKey("url")
 		StaticUrlKey, err := siteKey.GetKey("static_url")
@@ -162,7 +167,7 @@ func LoadConfig(appPath, configDirectory, configName string) {
 
 	//短信配置
 
-	smsKey, err := cfg.GetSection("sms")
+	smsKey, err := OriginFile.GetSection("sms")
 	if err == nil {
 		SmsSidKey, err := smsKey.GetKey("account_sid")
 		SmsTokenKey, err := smsKey.GetKey("auth_token")
@@ -178,7 +183,7 @@ func LoadConfig(appPath, configDirectory, configName string) {
 
 	//RPC配置
 
-	rpcKey, err := cfg.GetSection("rpc")
+	rpcKey, err := OriginFile.GetSection("rpc")
 	if err == nil {
 		RPCListenHostKey, err := rpcKey.GetKey("listen_host")
 		RPCListenPortKey, err := rpcKey.GetKey("listen_port")
@@ -190,7 +195,7 @@ func LoadConfig(appPath, configDirectory, configName string) {
 		}
 	}
 
-	wxKey, err := cfg.GetSection("wechat")
+	wxKey, err := OriginFile.GetSection("wechat")
 	if err == nil {
 		WxAccountKey, err := wxKey.GetKey("wxaccount")
 		WxAppidKey, err := wxKey.GetKey("appid")
@@ -207,7 +212,7 @@ func LoadConfig(appPath, configDirectory, configName string) {
 
 	}
 
-	redisKey, err := cfg.GetSection("redis")
+	redisKey, err := OriginFile.GetSection("redis")
 	if err == nil {
 		RedisIpKey, err := redisKey.GetKey("ip")
 		RedisportKey, err := redisKey.GetKey("port")
@@ -237,7 +242,7 @@ func LoadConfig(appPath, configDirectory, configName string) {
 
 	//EMAIL配置
 
-	mailKey, err := cfg.GetSection("email")
+	mailKey, err := OriginFile.GetSection("email")
 
 	if err == nil {
 		EmailSmtpHostKey, err := mailKey.GetKey("smtp_host")
@@ -260,7 +265,7 @@ func LoadConfig(appPath, configDirectory, configName string) {
 		}
 	}
 
-	thriftKey, err := cfg.GetSection("thrift")
+	thriftKey, err := OriginFile.GetSection("thrift")
 	if err == nil {
 		thriftListenPortKey, err := thriftKey.GetKey("listen_port")
 		ThriftSslServerKeyKey, err := thriftKey.GetKey("ssl_server_key")
@@ -275,4 +280,20 @@ func LoadConfig(appPath, configDirectory, configName string) {
 			ThriftSslClientCrt = appPath + string(os.PathSeparator) + "conf" + string(os.PathSeparator) + ThriftSslClientCrtKey.String()
 		}
 	}
+}
+
+func LoadByParam(section, key string) (result string, err error) {
+	if OriginFile == nil {
+		err = fmt.Errorf("No config file readed!")
+		return
+	}
+	pKey, err := OriginFile.GetSection("thrift")
+	if err != nil {
+		return
+	}
+	rKey, err := pKey.GetKey(key)
+	if err != nil {
+		return
+	}
+	return rKey.String(), nil
 }
